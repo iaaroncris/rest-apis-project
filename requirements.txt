@@ -8,3 +8,4 @@ passlib
 flask-migrate
 python-dotenv
 gunicorn
+psycopg2
