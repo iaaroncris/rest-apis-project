@@ -19,6 +19,9 @@ class UserRegister(MethodView):
         if UserModel.query.filter(UserModel.username == user_data["username"]).first():
             abort(409, message="A user with that username already exists.")
 
+        if(not(user_data['username'] and user_data['username'].strip()) or not(user_data['password'] and user_data['password'].strip())):
+            abort(401, message="Username and password cannot be empty")
+
         user = UserModel(username=user_data["username"], password=pbkdf2_sha256.hash(user_data["password"]))
         db.session.add(user)
         db.session.commit()
@@ -30,6 +33,9 @@ class UserLogin(MethodView):
     @blp.arguments(UserSchema)
     def post(self, user_data):
         user = UserModel.query.filter(UserModel.username == user_data["username"]).first()
+
+        if(not(user_data['username'] and user_data['username'].strip()) or not(user_data['password'] and user_data['password'].strip())):
+            abort(401, message="Username and password cannot be empty")
 
         if user and pbkdf2_sha256.verify(user_data["password"], user.password):
             access_token = create_access_token(identity=user.id, fresh=True)
@@ -44,16 +50,24 @@ class TokenRefresh(MethodView):
     def post(self):
         current_user = get_jwt_identity()
         new_token = create_access_token(identity=current_user, fresh=False)
+        jti = get_jwt()["jti"]
+        BLOCKLIST.add(jti)
         return{"access_token": new_token}
+        
 
 
 @blp.route("/logout")
 class UserLogout(MethodView):
+    @blp.arguments(UserSchema)
     @jwt_required()
-    def post(self):
-        jti = get_jwt()["jti"]
-        BLOCKLIST.add(jti)
-        return {"message":"Successfully logged out."}
+    def post(self, user_data):
+        user = UserModel.query.filter(UserModel.username == user_data["username"]).first()
+        if user and pbkdf2_sha256.verify(user_data["password"], user.password):
+            jti = get_jwt()["jti"]
+            BLOCKLIST.add(jti)
+            return {"message":"Successfully logged out."}
+        else:
+            abort(401, message="Invalid credentials.")
 
 
 @blp.route("/user/<int:user_id>")

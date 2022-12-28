@@ -33,7 +33,14 @@ class Item(MethodView):
     def put(self, item_data, item_id):
         item = ItemModel.query.get(item_id)
         if item:
-            item.price = item_data["price"]
+            if(isinstance(item_data['price'],float)):
+                item.price = item_data["price"]
+            else:
+                abort(401,message="Invalid input for price")
+            if(isinstance(item_data['quantity'],int)):
+                item.quantity = item_data["quantity"]       
+            else:
+                abort(401,message="Invalid input for quantity") 
             item.name = item_data["name"]
         else:
             item = ItemModel(id=item_id, **item_data)
