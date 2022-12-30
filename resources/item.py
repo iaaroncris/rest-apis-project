@@ -18,11 +18,7 @@ class Item(MethodView):
         return item
 
     @jwt_required()
-    def delete(self, item_id):
-        jwt = get_jwt()
-        if not jwt.get("is_admin"):
-            abort(401, message="Admin priviledge required.")
-            
+    def delete(self, item_id):            
         item = ItemModel.query.get_or_404(item_id)
         db.session.delete(item)
         db.session.commit()
