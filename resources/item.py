@@ -10,7 +10,7 @@ from schemas import ItemSchema, ItemUpdateSchema
 blp = Blueprint("Items", __name__, description="Operations on items")
 
 
-@blp.route("/item/<string:item_id>")
+@blp.route("/item/<int:item_id>")
 class Item(MethodView):
     @blp.response(200, ItemSchema)
     def get(self, item_id):
@@ -32,11 +32,11 @@ class Item(MethodView):
             if(isinstance(item_data['price'],float)):
                 item.price = item_data["price"]
             else:
-                abort(401,message="Invalid input for price")
+                abort(500,message="Invalid input for price")
             if(isinstance(item_data['quantity'],int)):
                 item.quantity = item_data["quantity"]       
             else:
-                abort(401,message="Invalid input for quantity") 
+                abort(500,message="Invalid input for quantity") 
             item.name = item_data["name"]
         else:
             item = ItemModel(id=item_id, **item_data)
@@ -59,7 +59,8 @@ class ItemList(MethodView):
     @blp.response(200, ItemSchema)
     def post(self, item_data):
         item = ItemModel(**item_data)
-
+        if(isinstance(item_data['store_id'],int)):
+            abort(500, message="Store ID must be an integer and cannot be empty")
         try:
             db.session.add(item)
             db.session.commit()

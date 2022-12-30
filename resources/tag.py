@@ -63,7 +63,7 @@ class LinkTagsToItem(MethodView):
         except SQLAlchemyError:
             abort(400, message="Error occurred while deleting the tag.")
         
-        return {"message": "Item removed fromm tag", "item":item, "tag":tag}
+        return {"message": "Item removed from tag", "item":item, "tag":tag}
 
 
 
