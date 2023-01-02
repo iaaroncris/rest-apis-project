@@ -17,7 +17,7 @@ class UserRegister(MethodView):
     @blp.arguments(UserSchema)
     def post(self, user_data):
         if UserModel.query.filter(UserModel.username == user_data["username"]).first():
-            abort(400, message="A user with that username already exists.")
+            abort(409, message="A user with that username already exists.")
 
         if(not(user_data['username'] and user_data['username'].strip()) or not(user_data['password'] and user_data['password'].strip())):
             abort(400, message="Username and/or password cannot be empty")
