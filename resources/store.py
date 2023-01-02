@@ -14,10 +14,14 @@ blp = Blueprint('stores', __name__, description="Operations on stores")
 class Store(MethodView):
     @blp.response(200, StoreSchema)
     def get(self, store_id):
+        if not(isinstance(store_id,int)):
+            abort(500, message="Store ID must be an integer and cannot be empty")
         store = StoreModel.query.get_or_404(store_id)
         return store
 
     def delete(self, store_id):
+        if not(isinstance(store_id,int)):
+            abort(500, message="Store ID must be an integer and cannot be empty")
         store = StoreModel.query.get_or_404(store_id)
         db.session.delete(store)
         db.session.commit()
@@ -33,8 +37,9 @@ class StoreList(MethodView):
     @blp.arguments(StoreSchema)
     @blp.response(200, StoreSchema)
     def post(self, store_data):
+        if not(store_data['name'] and store_data['name'].strip()):
+            abort(400, message="Store name cannot be empty")
         store = StoreModel(**store_data)
-
         try:
             db.session.add(store)
             db.session.commit()

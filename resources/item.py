@@ -14,11 +14,15 @@ blp = Blueprint("Items", __name__, description="Operations on items")
 class Item(MethodView):
     @blp.response(200, ItemSchema)
     def get(self, item_id):
+        if not(isinstance(item_id,int)):
+            abort(400, message="Item ID must be an integer and cannot be empty")
         item = ItemModel.query.get_or_404(item_id)
         return item
 
     @jwt_required()
-    def delete(self, item_id):            
+    def delete(self, item_id):   
+        if not(isinstance(item_id,int)):
+            abort(400, message="Item ID must be an integer and cannot be empty")         
         item = ItemModel.query.get_or_404(item_id)
         db.session.delete(item)
         db.session.commit()
@@ -27,17 +31,14 @@ class Item(MethodView):
     @blp.arguments(ItemUpdateSchema)
     @blp.response(200, ItemSchema)
     def put(self, item_data, item_id):
+        if not(isinstance(item_id,int)):
+            abort(400, message="Item ID must be an integer and cannot be empty")
         item = ItemModel.query.get(item_id)
         if item:
-            if(isinstance(item_data['price'],float)):
-                item.price = item_data["price"]
-            else:
-                abort(500,message="Invalid input for price")
-            if(isinstance(item_data['quantity'],int)):
-                item.quantity = item_data["quantity"]       
-            else:
-                abort(500,message="Invalid input for quantity") 
-            item.name = item_data["name"]
+            if not (isinstance(item_data['price'],float)):
+                abort(400,message="Price must be a float and cannot be empty")
+            if not(isinstance(item_data['quantity'],int)):
+                abort(400,message="Quantity must be an integer and cannot be empty") 
         else:
             item = ItemModel(id=item_id, **item_data)
 
@@ -59,8 +60,12 @@ class ItemList(MethodView):
     @blp.response(200, ItemSchema)
     def post(self, item_data):
         item = ItemModel(**item_data)
-        if(isinstance(item_data['store_id'],int)):
-            abort(500, message="Store ID must be an integer and cannot be empty")
+        if not(isinstance(item_data['store_id'],int)):
+            abort(400, message="Store ID must be an integer and cannot be empty")
+        if not (isinstance(item_data['price'],float)):
+            abort(400,message="Price must be a float and cannot be empty")
+        if not(isinstance(item_data['quantity'],int)):
+            abort(400,message="Quantity must be an integer and cannot be empty")
         try:
             db.session.add(item)
             db.session.commit()

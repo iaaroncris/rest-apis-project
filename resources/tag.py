@@ -13,6 +13,8 @@ blp = Blueprint("Tags", "tags", description="Operations on tags")
 class TagsInStore(MethodView):
     @blp.response(200, TagSchema(many=True))
     def get(self, store_id):
+        if not(isinstance(store_id,int)):
+            abort(400, message="Store ID must be an integer and cannot be empty")
         store = StoreModel.query.get_or_404(store_id)
 
         return store.tags.all()
@@ -20,6 +22,10 @@ class TagsInStore(MethodView):
     @blp.arguments(TagSchema)
     @blp.response(201, TagSchema)
     def post(self, tag_data, store_id):
+        if not(isinstance(store_id,int)):
+            abort(400, message="Store ID must be an integer and cannot be empty")
+        if not(tag_data['name'] and tag_data['name'].strip()):
+            abort(400, message="Tag name cannot be empty")
         if TagModel.query.filter(TagModel.store_id == store_id).first():
             abort(400, message="A tag with that name already exists in that store.")
 
@@ -38,6 +44,10 @@ class TagsInStore(MethodView):
 class LinkTagsToItem(MethodView):
     @blp.response(201, TagSchema)
     def post(self, item_id, tag_id):
+        if not(isinstance(item_id,int)):
+            abort(400, message="Item ID must be an integer and cannot be empty")
+        if not(isinstance(tag_id,int)):
+            abort(400, message="Tag ID must be an integer and cannot be empty")
         item = ItemModel.query.get_or_404(item_id)
         tag = TagModel.query.get_or_404(tag_id)
 
@@ -52,6 +62,10 @@ class LinkTagsToItem(MethodView):
 
     @blp.response(201, TagAndItemSchema)
     def delete(self, item_id, tag_id):
+        if not(isinstance(item_id,int)):
+            abort(400, message="Item ID must be an integer and cannot be empty")
+        if not(isinstance(tag_id,int)):
+            abort(400, message="Tag ID must be an integer and cannot be empty")
         item = ItemModel.query.get_or_404(item_id)
         tag = TagModel.query.get_or_404(tag_id)
 
@@ -71,6 +85,8 @@ class LinkTagsToItem(MethodView):
 class Tag(MethodView):
     @blp.response(200, TagSchema)
     def get(self, tag_id):
+        if not(isinstance(tag_id,int)):
+            abort(400, message="Tag ID must be an integer and cannot be empty")
         tag = TagModel.query.get_or_404(tag_id)
         return tag
 
@@ -79,6 +95,8 @@ class Tag(MethodView):
     @blp.alt_response(404, description="Tag not found.")
     @blp.alt_response(400, description="Returned id the tag is assigned to one or more items. In this case, the tap is not deleted.")
     def delete(self, tag_id):
+        if not(isinstance(tag_id,int)):
+            abort(400, message="Tag ID must be an integer and cannot be empty")
         tag = TagModel.query.get_or_404(tag_id)
 
         if not tag.items:
